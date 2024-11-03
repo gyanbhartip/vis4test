@@ -1,3 +1,27 @@
 {
-  "extends": "@react-native/typescript-config/tsconfig.json"
+    "extends": "@react-native/typescript-config/tsconfig.json" /* Recommended React Native TSConfig base */,
+    "compilerOptions": {
+        /* Visit https://aka.ms/tsconfig.json to read more about this file */
+        "allowUnreachableCode": false,
+        "baseUrl": ".",
+        "diagnostics": true,
+        "module": "Preserve",
+        "verbatimModuleSyntax": true,
+        /* Completeness */
+        "paths": {
+            "_assets": ["./src/assets"],
+            "_components": ["./src/components"],
+            "_hooks": ["./src/hooks"],
+            "_navigators": ["./src/navigators"],
+            "_screens": ["./src/screens"],
+            "_styles": ["./src/styles"],
+            "_assets/*": ["./src/assets/*"],
+            "_components/*": ["./src/components/*"],
+            "_hooks/*": ["./src/hooks/*"],
+            "_navigators/*": ["./src/navigators/*"],
+            "_screens/*": ["./src/screens/*"],
+            "_styles/*": ["./src/styles/*"]
+        }
+    },
+    "include": ["src/**/*"]
 }
