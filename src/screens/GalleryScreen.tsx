@@ -1,11 +1,7 @@
-import { View, Text } from 'react-native';
+import GalleryComponent from '_components/Gallery';
 
 const GalleryScreen = () => {
-    return (
-        <View>
-            <Text>GalleryScreen</Text>
-        </View>
-    );
+    return <GalleryComponent />;
 };
 
 export default GalleryScreen;

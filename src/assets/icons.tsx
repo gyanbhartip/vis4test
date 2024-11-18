@@ -54,6 +54,27 @@ export const FlashOnIcon = () => (
     </Svg>
 );
 
+export const PauseIcon = () => (
+    <Svg fill="none" stroke-width="1.5" stroke="#ffffff" viewBox="0 0 24 24">
+        <Path
+            d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </Svg>
+);
+
+export const RecordIcon = () => (
+    <View
+        style={{
+            backgroundColor: '#bea8a8',
+            borderRadius: '50%',
+            height: 30,
+            width: 30,
+        }}
+    />
+);
+
 export const RotateIcon = () => (
     <Svg
         fill="none"
@@ -109,13 +130,23 @@ export const TorchOnIcon = () => (
     </Svg>
 );
 
-export const VideCaptureIcon = () => (
+export const StartVideCaptureIcon = () => (
     <View
         style={{
             backgroundColor: '#be4848',
             borderRadius: '50%',
             height: 36,
             width: 36,
+        }}
+    />
+);
+export const StopVideCaptureIcon = () => (
+    <View
+        style={{
+            backgroundColor: '#be4848',
+            borderRadius: 2,
+            height: 28,
+            width: 28,
         }}
     />
 );

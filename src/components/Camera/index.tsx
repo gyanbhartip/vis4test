@@ -3,16 +3,20 @@ import {
     CameraIcon,
     FlashOffIcon,
     FlashOnIcon,
+    PauseIcon,
+    RecordIcon,
     RotateIcon,
+    StartVideCaptureIcon,
+    StopVideCaptureIcon,
     TorchOffIcon,
     TorchOnIcon,
-    VideCaptureIcon,
 } from '_assets/icons';
 import PermissionsPage from '_components/Permissions';
 import { useIsForeground } from '_hooks/useIsForeground';
 import globalStyles from '_styles';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
+    Platform,
     Pressable,
     StyleSheet,
     Text,
@@ -72,18 +76,28 @@ const CameraComponent = ({
     const isActive = isForeground && isFocused;
 
     const [flash, setFlash] = useState<boolean>(false);
+    const [isRecording, setIsRecording] = useState<boolean>(false);
+    const [isRecordingPaused, setIsRecordingPaused] = useState<boolean>(false);
     const switchFlashStatus = () => {
         console.log('switchFlashStatus');
         setFlash(_f => !_f);
     };
 
-    const { hasPermission: hasCameraPermission } = useCameraPermission();
-    const { hasPermission: hasMicPermission } = useMicrophonePermission();
+    const {
+        hasPermission: hasCameraPermission,
+        requestPermission: requestCameraPermission,
+    } = useCameraPermission();
+    const {
+        hasPermission: hasMicPermission,
+        requestPermission: requestMicPermission,
+    } = useMicrophonePermission();
     if (!hasCameraPermission || !hasMicPermission) {
         return (
             <PermissionsPage
                 hasCameraPermission={hasCameraPermission}
                 hasMicPermission={hasMicPermission}
+                onRequestCameraPermission={requestCameraPermission}
+                onRequestMicPermission={requestMicPermission}
             />
         );
     }
@@ -100,8 +114,31 @@ const CameraComponent = ({
     const onPressShutter = async () => {
         console.log('onPressShutter');
         try {
-            const _photo = await cameraRef.current?.takePhoto(captureOptions);
-            console.log('photo captured', _photo);
+            if (mode === 'Photo') {
+                const _photo =
+                    await cameraRef.current?.takePhoto(captureOptions);
+                console.log('photo captured', _photo);
+            } else if (mode === 'Video') {
+                if (isRecording) {
+                    await cameraRef.current?.stopRecording();
+                    setIsRecording(false);
+                } else {
+                    cameraRef.current?.startRecording({
+                        fileType: Platform.OS === 'ios' ? 'mov' : 'mp4',
+                        videoCodec: 'h265',
+                        flash: device?.hasFlash && flash ? 'on' : 'off',
+                        onRecordingError: () => {
+                            console.log('video recording error');
+                        },
+                        onRecordingFinished: () => {
+                            console.log('video recording finished');
+                        },
+                        // path: ``,
+                    });
+                    setIsRecording(true);
+                    console.log('video capturing');
+                }
+            }
         } catch (error) {
             console.error('error in capturing photo', error);
         }
@@ -114,6 +151,7 @@ const CameraComponent = ({
                     // onGestureEvent={onPinchGesture}
                     enabled={true}>
                     <Camera
+                        audio={mode === 'Video'}
                         device={device}
                         isActive={isActive}
                         photo={mode === 'Photo'}
@@ -125,7 +163,13 @@ const CameraComponent = ({
                 </PinchGestureHandler>
             </GestureHandlerRootView>
             <View style={styles.bottomButtonsContainer}>
-                {allowPositionSwitching ? (
+                {isRecording ? (
+                    isRecordingPaused ? (
+                        <RecordIcon />
+                    ) : (
+                        <PauseIcon />
+                    )
+                ) : allowPositionSwitching ? (
                     <Pressable
                         onPress={switchCameraDevice}
                         style={styles.smallButton}>
@@ -142,7 +186,13 @@ const CameraComponent = ({
                     />
                 )}
                 <Pressable onPress={onPressShutter} style={styles.shutterIcon}>
-                    {mode === 'Photo' ? <CameraIcon /> : <VideCaptureIcon />}
+                    {mode === 'Photo' ? (
+                        <CameraIcon />
+                    ) : isRecording ? (
+                        <StopVideCaptureIcon />
+                    ) : (
+                        <StartVideCaptureIcon />
+                    )}
                 </Pressable>
                 <Pressable
                     onPress={switchFlashStatus}

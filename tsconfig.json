@@ -15,12 +15,14 @@
             "_navigators": ["./src/navigators"],
             "_screens": ["./src/screens"],
             "_styles": ["./src/styles"],
+            "_utils": ["./src/utils"],
             "_assets/*": ["./src/assets/*"],
             "_components/*": ["./src/components/*"],
             "_hooks/*": ["./src/hooks/*"],
             "_navigators/*": ["./src/navigators/*"],
             "_screens/*": ["./src/screens/*"],
-            "_styles/*": ["./src/styles/*"]
+            "_styles/*": ["./src/styles/*"],
+            "_utils/*": ["./src/utils/*"]
         }
     },
     "include": ["src/**/*"]

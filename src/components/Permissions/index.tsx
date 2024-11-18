@@ -14,16 +14,19 @@ import {
 type Props = {
     hasCameraPermission: boolean;
     hasMicPermission?: boolean;
+    onRequestCameraPermission: () => Promise<boolean>;
+    onRequestMicPermission: () => Promise<boolean>;
 };
 
-const PermissionsPage = ({ hasCameraPermission, hasMicPermission }: Props) => {
+const PermissionsPage = ({
+    hasCameraPermission,
+    hasMicPermission,
+    onRequestCameraPermission,
+    onRequestMicPermission,
+}: Props) => {
     const requestPermissionHandler = async () => {
-        !hasCameraPermission &&
-            (await PermissionsAndroid.request('android.permission.CAMERA'));
-        !hasMicPermission &&
-            (await PermissionsAndroid.request(
-                'android.permission.RECORD_AUDIO',
-            ));
+        !hasCameraPermission && (await onRequestCameraPermission());
+        !hasMicPermission && (await onRequestMicPermission());
     };
     return (
         <SafeAreaView style={styles.container}>
