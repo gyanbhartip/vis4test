@@ -13,8 +13,8 @@ import {
 } from '_assets/icons';
 import PermissionsPage from '_components/Permissions';
 import { useIsForeground } from '_hooks/useIsForeground';
-import globalStyles from '_styles';
-import { useRef, useState } from 'react';
+import { globalStyles } from '_styles';
+import { useCallback, useRef, useState } from 'react';
 import {
     Platform,
     Pressable,
@@ -59,14 +59,14 @@ const CameraComponent = ({
     const [selectedDevice, setSelectedDevice] =
         useState<CameraPosition>(position);
     const device = useCameraDevice(selectedDevice);
-    const switchCameraDevice = () => {
+    const switchCameraDevice = useCallback(() => {
         console.log('switchCameraDevice');
         switchButtonRotation.value = withTiming(
             switchButtonRotation.value + 360,
             { duration: 500 },
         );
         setSelectedDevice(_d => (_d === 'back' ? 'front' : 'back'));
-    };
+    }, [switchButtonRotation]);
     const switchButtonAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{ rotateZ: `${switchButtonRotation.value}deg` }],
     }));
@@ -78,10 +78,11 @@ const CameraComponent = ({
     const [flash, setFlash] = useState<boolean>(false);
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const [isRecordingPaused, setIsRecordingPaused] = useState<boolean>(false);
-    const switchFlashStatus = () => {
+
+    const switchFlashStatus = useCallback(() => {
         console.log('switchFlashStatus');
         setFlash(_f => !_f);
-    };
+    }, []);
 
     const {
         hasPermission: hasCameraPermission,
@@ -91,27 +92,17 @@ const CameraComponent = ({
         hasPermission: hasMicPermission,
         requestPermission: requestMicPermission,
     } = useMicrophonePermission();
-    if (!hasCameraPermission || !hasMicPermission) {
-        return (
-            <PermissionsPage
-                hasCameraPermission={hasCameraPermission}
-                hasMicPermission={hasMicPermission}
-                onRequestCameraPermission={requestCameraPermission}
-                onRequestMicPermission={requestMicPermission}
-            />
-        );
-    }
 
-    if (device == null) {
-        return <Text style={globalStyles.warnText}>Device missing</Text>;
-    }
+    const componentRenderCount = useRef(0);
+    componentRenderCount.current = componentRenderCount.current + 1;
 
     const captureOptions = {
         flash: device?.hasFlash && flash ? 'on' : 'off',
         enableShutterSound: false,
+        // path:''
     } satisfies TakePhotoOptions;
 
-    const onPressShutter = async () => {
+    const onPressShutter = useCallback(async () => {
         console.log('onPressShutter');
         try {
             if (mode === 'Photo') {
@@ -142,74 +133,103 @@ const CameraComponent = ({
         } catch (error) {
             console.error('error in capturing photo', error);
         }
-    };
+    }, [captureOptions, device?.hasFlash, flash, isRecording, mode]);
+
+    if (!hasCameraPermission || !hasMicPermission) {
+        return (
+            <PermissionsPage
+                hasCameraPermission={hasCameraPermission}
+                hasMicPermission={hasMicPermission}
+                onRequestCameraPermission={requestCameraPermission}
+                onRequestMicPermission={requestMicPermission}
+            />
+        );
+    }
+
+    if (device == null) {
+        return <Text style={globalStyles.warnText}>Device missing</Text>;
+    }
 
     return (
         <>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-                <PinchGestureHandler
-                    // onGestureEvent={onPinchGesture}
-                    enabled={true}>
-                    <Camera
-                        audio={mode === 'Video'}
-                        device={device}
-                        isActive={isActive}
-                        photo={mode === 'Photo'}
-                        ref={cameraRef}
-                        resizeMode="cover"
-                        style={StyleSheet.absoluteFill}
-                        video={mode === 'Video'}
-                    />
-                </PinchGestureHandler>
-            </GestureHandlerRootView>
-            <View style={styles.bottomButtonsContainer}>
-                {isRecording ? (
-                    isRecordingPaused ? (
-                        <RecordIcon />
-                    ) : (
-                        <PauseIcon />
-                    )
-                ) : allowPositionSwitching ? (
-                    <Pressable
-                        onPress={switchCameraDevice}
-                        style={styles.smallButton}>
-                        <Animated.View style={switchButtonAnimatedStyle}>
-                            <RotateIcon />
-                        </Animated.View>
-                    </Pressable>
-                ) : (
-                    <View
-                        style={[
-                            styles.smallButton,
-                            { backgroundColor: '#00000000' },
-                        ]}
-                    />
-                )}
-                <Pressable onPress={onPressShutter} style={styles.shutterIcon}>
-                    {mode === 'Photo' ? (
-                        <CameraIcon />
-                    ) : isRecording ? (
-                        <StopVideCaptureIcon />
-                    ) : (
-                        <StartVideCaptureIcon />
-                    )}
-                </Pressable>
-                <Pressable
-                    onPress={switchFlashStatus}
-                    style={styles.smallButton}>
-                    {mode === 'Photo' ? (
-                        flash ? (
-                            <FlashOnIcon />
+            {device ? (
+                <>
+                    <GestureHandlerRootView style={globalStyles.flex}>
+                        <PinchGestureHandler
+                            // onGestureEvent={onPinchGesture}
+                            enabled={true}>
+                            <Camera
+                                audio={mode === 'Video'}
+                                device={device}
+                                isActive={isActive}
+                                photo={mode === 'Photo'}
+                                ref={cameraRef}
+                                resizeMode="cover"
+                                style={StyleSheet.absoluteFill}
+                                video={mode === 'Video'}
+                            />
+                        </PinchGestureHandler>
+                    </GestureHandlerRootView>
+                    <View style={styles.bottomButtonsContainer}>
+                        {isRecording ? (
+                            isRecordingPaused ? (
+                                <RecordIcon />
+                            ) : (
+                                <PauseIcon />
+                            )
+                        ) : allowPositionSwitching ? (
+                            <Pressable
+                                onPress={switchCameraDevice}
+                                style={styles.smallButton}>
+                                <Animated.View
+                                    style={switchButtonAnimatedStyle}>
+                                    <RotateIcon />
+                                </Animated.View>
+                            </Pressable>
                         ) : (
-                            <FlashOffIcon />
-                        )
-                    ) : flash ? (
-                        <TorchOnIcon />
-                    ) : (
-                        <TorchOffIcon />
-                    )}
-                </Pressable>
-            </View>
+                            <View
+                                style={[
+                                    styles.smallButton,
+                                    globalStyles.bgTransparent,
+                                ]}
+                            />
+                        )}
+                        <Pressable
+                            onPress={onPressShutter}
+                            style={styles.shutterIcon}>
+                            {mode === 'Photo' ? (
+                                <CameraIcon />
+                            ) : isRecording ? (
+                                <StopVideCaptureIcon />
+                            ) : (
+                                <StartVideCaptureIcon />
+                            )}
+                        </Pressable>
+                        <Pressable
+                            onPress={switchFlashStatus}
+                            style={styles.smallButton}>
+                            {mode === 'Photo' ? (
+                                flash ? (
+                                    <FlashOnIcon />
+                                ) : (
+                                    <FlashOffIcon />
+                                )
+                            ) : flash ? (
+                                <TorchOnIcon />
+                            ) : (
+                                <TorchOffIcon />
+                            )}
+                        </Pressable>
+                    </View>
+                </>
+            ) : (
+                <View style={{}}>
+                    <CameraIcon />
+                    <Text style={globalStyles.warnText}>
+                        There seems to be an issue with accessing the camera.
+                    </Text>
+                </View>
+            )}
         </>
     );
 };

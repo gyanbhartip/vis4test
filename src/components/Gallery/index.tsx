@@ -1,28 +1,29 @@
-import { type Album, CameraRoll } from '@react-native-camera-roll/camera-roll';
+import { CameraRoll, type Album } from '@react-native-camera-roll/camera-roll';
 import { useFocusEffect } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 import { parseAssetFromPhUri } from '_utils/fetcher.ts';
 import { useCallback, useState } from 'react';
 import {
-    Dimensions,
     Platform,
     StyleSheet,
     Text,
-    useWindowDimensions,
     View,
+    useWindowDimensions,
+    type TextStyle,
+    type ViewStyle,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
-type Props = {};
 
-const GalleryComponent = (props: Props) => {
+const GalleryComponent = () => {
     const thumbnailSize = (useWindowDimensions().width - 48) / 2;
     const [albumList, setAlbumList] = useState<Array<AlbumWithUri>>([]);
 
     const fetchAlbumsList = useCallback(async () => {
-        const albumList = (await CameraRoll.getAlbums(
+        const _albumList = (await CameraRoll.getAlbums(
             {},
         )) as Array<AlbumWithUri>;
-        for (const album of albumList) {
+
+        for (const album of _albumList) {
             const photo = await CameraRoll.getPhotos({
                 first: 1,
                 groupTypes: 'Album',
@@ -39,7 +40,7 @@ const GalleryComponent = (props: Props) => {
             }
         }
         setAlbumList(albumList);
-    }, []);
+    }, [albumList]);
 
     useFocusEffect(
         useCallback(() => {
@@ -47,63 +48,35 @@ const GalleryComponent = (props: Props) => {
         }, [fetchAlbumsList]),
     );
 
-    const flashListRenderItem = ({
-        item: albumItem,
-    }: {
-        item: AlbumWithUri;
-    }) => {
-        return (
-            <View
-                style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderColor: '#fafafa',
-                    borderWidth: StyleSheet.hairlineWidth,
-                    marginHorizontal: 8,
-                    marginBottom: 16,
-                }}>
-                <FastImage
-                    resizeMode={FastImage.resizeMode.cover}
-                    source={{
-                        priority: FastImage.priority.normal,
-                        uri: albumItem.uri,
-                    }}
-                    style={{
-                        width: thumbnailSize,
-                        height: thumbnailSize,
-                    }}
-                />
-                <Text
-                    style={{
-                        color: 'lightgrey',
-                        fontSize: 14,
-                        fontWeight: '600',
-                    }}>
-                    {albumItem.title}
-                </Text>
-            </View>
-        );
-    };
+    const flashListRenderItem = useCallback(
+        ({ item: albumItem }: { item: AlbumWithUri }) => {
+            return (
+                <View style={styles.imageContainer}>
+                    <FastImage
+                        resizeMode={FastImage.resizeMode.cover}
+                        source={{
+                            priority: FastImage.priority.normal,
+                            uri: albumItem.uri,
+                        }}
+                        style={{
+                            width: thumbnailSize,
+                            height: thumbnailSize,
+                        }}
+                    />
+                    <Text style={styles.albumTitle}>{albumItem.title}</Text>
+                </View>
+            );
+        },
+        [thumbnailSize],
+    );
 
     return (
-        <View
-            style={{
-                backgroundColor: 'darkred',
-                flex: 1,
-                paddingHorizontal: 8,
-            }}>
-            <Text
-                style={{
-                    color: 'white',
-                    fontSize: 22,
-                    fontWeight: 600,
-                    marginLeft: 8,
-                }}>
-                Albums
-            </Text>
+        <View style={styles.container}>
+            <Text style={styles.header}>Albums</Text>
             <FlashList
                 contentContainerStyle={{}}
                 data={albumList}
+                estimatedItemSize={100}
                 numColumns={2}
                 renderItem={flashListRenderItem}
                 showsVerticalScrollIndicator={false}
@@ -114,5 +87,37 @@ const GalleryComponent = (props: Props) => {
 
 export default GalleryComponent;
 
-const styles = StyleSheet.create({});
+type Styles = {
+    albumTitle: TextStyle;
+    container: ViewStyle;
+    header: TextStyle;
+    imageContainer: ViewStyle;
+};
+
+const styles = StyleSheet.create<Styles>({
+    albumTitle: {
+        color: 'lightgrey',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    container: {
+        backgroundColor: 'darkred',
+        flex: 1,
+        paddingHorizontal: 8,
+    },
+    header: {
+        color: 'white',
+        fontSize: 22,
+        fontWeight: 600,
+        marginLeft: 8,
+    },
+    imageContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderColor: '#fafafa',
+        borderWidth: StyleSheet.hairlineWidth,
+        marginHorizontal: 8,
+        marginBottom: 16,
+    },
+});
 export type AlbumWithUri = Album & { uri: string };

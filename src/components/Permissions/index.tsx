@@ -1,8 +1,8 @@
-import globalStyles from '_styles';
-import React from 'react';
+import { globalStyles } from '_styles';
+import { useCallback } from 'react';
 import {
-    PermissionsAndroid,
     Pressable,
+    type PressableStateCallbackType,
     SafeAreaView,
     StyleSheet,
     Text,
@@ -24,10 +24,26 @@ const PermissionsPage = ({
     onRequestCameraPermission,
     onRequestMicPermission,
 }: Props) => {
-    const requestPermissionHandler = async () => {
+    const requestPermissionHandler = useCallback(async () => {
         !hasCameraPermission && (await onRequestCameraPermission());
         !hasMicPermission && (await onRequestMicPermission());
-    };
+    }, [
+        hasCameraPermission,
+        hasMicPermission,
+        onRequestCameraPermission,
+        onRequestMicPermission,
+    ]);
+
+    const buttonStyle = useCallback(
+        ({ pressed }: PressableStateCallbackType) => [
+            styles.button,
+            {
+                opacity: pressed ? 0.65 : 1,
+            },
+        ],
+        [],
+    );
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.innerContainer}>
@@ -45,12 +61,7 @@ const PermissionsPage = ({
                 <View style={globalStyles.centerNoFlex}>
                     <Pressable
                         onPress={requestPermissionHandler}
-                        style={({ pressed }) => [
-                            styles.button,
-                            {
-                                opacity: pressed ? 0.65 : 1,
-                            },
-                        ]}>
+                        style={buttonStyle}>
                         <Text style={styles.buttonText}>
                             request permission
                         </Text>

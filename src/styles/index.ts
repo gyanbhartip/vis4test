@@ -1,16 +1,28 @@
 import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 type Styles = {
+    bgTransparent: ViewStyle;
+    boldText: TextStyle;
     centerNoFlex: ViewStyle;
+    flex: ViewStyle;
     flexCenter: ViewStyle;
     h1: TextStyle;
     warnText: TextStyle;
 };
 
-const styles = StyleSheet.create<Styles>({
+export const globalStyles = StyleSheet.create<Styles>({
+    bgTransparent: {
+        backgroundColor: '#00000000',
+    },
+    boldText: {
+        fontWeight: 600,
+    },
     centerNoFlex: {
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    flex: {
+        flex: 1,
     },
     flexCenter: {
         alignItems: 'center',
@@ -27,5 +39,3 @@ const styles = StyleSheet.create<Styles>({
         textTransform: 'uppercase',
     },
 });
-
-export default styles;
