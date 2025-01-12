@@ -1,4 +1,4 @@
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
     CameraIcon,
     FlashOffIcon,
@@ -60,7 +60,6 @@ const CameraComponent = ({
         useState<CameraPosition>(position);
     const device = useCameraDevice(selectedDevice);
     const switchCameraDevice = useCallback(() => {
-        console.log('switchCameraDevice');
         switchButtonRotation.value = withTiming(
             switchButtonRotation.value + 360,
             { duration: 500 },
@@ -80,7 +79,6 @@ const CameraComponent = ({
     const [isRecordingPaused, setIsRecordingPaused] = useState<boolean>(false);
 
     const switchFlashStatus = useCallback(() => {
-        console.log('switchFlashStatus');
         setFlash(_f => !_f);
     }, []);
 
@@ -102,13 +100,22 @@ const CameraComponent = ({
         // path:''
     } satisfies TakePhotoOptions;
 
+    const navigation = useNavigation();
+    const navigateToSketchPad = useCallback(
+        (_imagePath = '') => {
+            navigation.navigate('SketchPad', {
+                imagePath: `file://${_imagePath}`,
+            });
+        },
+        [navigation],
+    );
+
     const onPressShutter = useCallback(async () => {
-        console.log('onPressShutter');
         try {
             if (mode === 'Photo') {
                 const _photo =
                     await cameraRef.current?.takePhoto(captureOptions);
-                console.log('photo captured', _photo);
+                navigateToSketchPad(_photo?.path);
             } else if (mode === 'Video') {
                 if (isRecording) {
                     await cameraRef.current?.stopRecording();
@@ -127,13 +134,19 @@ const CameraComponent = ({
                         // path: ``,
                     });
                     setIsRecording(true);
-                    console.log('video capturing');
                 }
             }
         } catch (error) {
             console.error('error in capturing photo', error);
         }
-    }, [captureOptions, device?.hasFlash, flash, isRecording, mode]);
+    }, [
+        captureOptions,
+        device?.hasFlash,
+        flash,
+        isRecording,
+        mode,
+        navigateToSketchPad,
+    ]);
 
     if (!hasCameraPermission || !hasMicPermission) {
         return (

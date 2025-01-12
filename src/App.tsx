@@ -1,12 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import RootNavigator from '_navigators/RootNavigator';
-import type React from 'react';
 import {
     SafeAreaView,
     StatusBar,
@@ -14,7 +6,7 @@ import {
     useColorScheme,
 } from 'react-native';
 
-function App(): React.JSX.Element {
+const App = (): JSX.Element => {
     const isDarkMode = useColorScheme() === 'dark';
 
     return (
@@ -34,7 +26,7 @@ function App(): React.JSX.Element {
             <RootNavigator />
         </SafeAreaView>
     );
-}
+};
 
 const styles = StyleSheet.create({
     backgroundStyle: {

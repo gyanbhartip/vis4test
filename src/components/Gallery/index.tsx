@@ -1,27 +1,37 @@
-import { CameraRoll, type Album } from '@react-native-camera-roll/camera-roll';
-import { useFocusEffect } from '@react-navigation/native';
+import { type Album, CameraRoll } from '@react-native-camera-roll/camera-roll';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
-import { parseAssetFromPhUri } from '_utils/fetcher.ts';
+import { getActualFilePath } from '_utils/fetcher.ts';
 import { useCallback, useState } from 'react';
 import {
-    Platform,
+    PermissionsAndroid,
+    Pressable,
     StyleSheet,
     Text,
-    View,
-    useWindowDimensions,
     type TextStyle,
+    View,
     type ViewStyle,
+    useWindowDimensions,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 const GalleryComponent = () => {
     const thumbnailSize = (useWindowDimensions().width - 48) / 2;
-    const [albumList, setAlbumList] = useState<Array<AlbumWithUri>>([]);
+    const [albumList, setAlbumList] = useState<Array<AlbumWithThumbnail>>([]);
 
     const fetchAlbumsList = useCallback(async () => {
-        const _albumList = (await CameraRoll.getAlbums(
-            {},
-        )) as Array<AlbumWithUri>;
+        const hasPermission = await PermissionsAndroid.check(
+            'android.permission.READ_MEDIA_IMAGES',
+        );
+
+        if (!hasPermission) {
+            await PermissionsAndroid.request(
+                'android.permission.READ_MEDIA_IMAGES',
+            );
+        }
+        const _albumList = (await CameraRoll.getAlbums({
+            assetType: 'All',
+        })) as Array<AlbumWithThumbnail>;
 
         for (const album of _albumList) {
             const photo = await CameraRoll.getPhotos({
@@ -29,18 +39,12 @@ const GalleryComponent = () => {
                 groupTypes: 'Album',
                 groupName: album.title,
             });
-
-            if (Platform.OS === 'ios') {
-                album.uri =
-                    (await parseAssetFromPhUri(
-                        photo.edges[0].node.image.uri,
-                    )) || '';
-            } else if (Platform.OS === 'android') {
-                album.uri = photo.edges[0].node.image.uri;
-            }
+            album.thumbnailUri =
+                (await getActualFilePath(photo.edges[0].node.image.uri)).uri ||
+                '';
         }
-        setAlbumList(albumList);
-    }, [albumList]);
+        setAlbumList(_albumList);
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -48,15 +52,28 @@ const GalleryComponent = () => {
         }, [fetchAlbumsList]),
     );
 
+    const navigation = useNavigation();
+
+    const handleAlbumPress = useCallback(
+        (album: AlbumWithThumbnail) => () => {
+            navigation.navigate('AlbumScreens', {
+                albumTitle: album.title,
+            });
+        },
+        [navigation],
+    );
+
     const flashListRenderItem = useCallback(
-        ({ item: albumItem }: { item: AlbumWithUri }) => {
+        ({ item: albumItem }: { item: AlbumWithThumbnail }) => {
             return (
-                <View style={styles.imageContainer}>
+                <Pressable
+                    style={styles.imageContainer}
+                    onPress={handleAlbumPress(albumItem)}>
                     <FastImage
                         resizeMode={FastImage.resizeMode.cover}
                         source={{
                             priority: FastImage.priority.normal,
-                            uri: albumItem.uri,
+                            uri: albumItem.thumbnailUri,
                         }}
                         style={{
                             width: thumbnailSize,
@@ -64,17 +81,15 @@ const GalleryComponent = () => {
                         }}
                     />
                     <Text style={styles.albumTitle}>{albumItem.title}</Text>
-                </View>
+                </Pressable>
             );
         },
-        [thumbnailSize],
+        [handleAlbumPress, thumbnailSize],
     );
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Albums</Text>
             <FlashList
-                contentContainerStyle={{}}
                 data={albumList}
                 estimatedItemSize={100}
                 numColumns={2}
@@ -104,6 +119,7 @@ const styles = StyleSheet.create<Styles>({
         backgroundColor: 'darkred',
         flex: 1,
         paddingHorizontal: 8,
+        paddingVertical: 16,
     },
     header: {
         color: 'white',
@@ -120,4 +136,6 @@ const styles = StyleSheet.create<Styles>({
         marginBottom: 16,
     },
 });
-export type AlbumWithUri = Album & { uri: string };
+type AlbumWithThumbnail = Album & { thumbnailUri: string };
+
+export { styles as galleryStyles };

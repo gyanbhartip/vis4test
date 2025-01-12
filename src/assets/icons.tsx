@@ -1,5 +1,39 @@
 import { View } from 'react-native';
-import Svg, { G, Path } from 'react-native-svg';
+import Svg, { G, Path, Rect } from 'react-native-svg';
+
+export const BinIcon = () => (
+    <Svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <Rect width="32" height="32" rx="16" fill="#3E4054" fillOpacity="0.5" />
+        <Path
+            d="M8.5 11H10.1667H23.5"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+        <Path
+            d="M21.8333 11V22.6667C21.8333 23.1087 21.6577 23.5326 21.3452 23.8452C21.0326 24.1578 20.6087 24.3334 20.1667 24.3334H11.8333C11.3913 24.3334 10.9674 24.1578 10.6548 23.8452C10.3423 23.5326 10.1667 23.1087 10.1667 22.6667V11M12.6667 11V9.33335C12.6667 8.89133 12.8423 8.4674 13.1548 8.15484C13.4674 7.84228 13.8913 7.66669 14.3333 7.66669H17.6667C18.1087 7.66669 18.5326 7.84228 18.8452 8.15484C19.1577 8.4674 19.3333 8.89133 19.3333 9.33335V11"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+        <Path
+            d="M14.3333 15.1667V20.1667"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+        <Path
+            d="M17.6667 15.1667V20.1667"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </Svg>
+);
 
 export const CameraIcon = () => (
     <Svg
@@ -18,6 +52,33 @@ export const CameraIcon = () => (
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
+        />
+    </Svg>
+);
+
+export const EditIcon = ({
+    primaryColor = '#FCFCFC',
+    secondaryColor = '#3E4054',
+    fillOpacity = 0.5,
+}: {
+    fillOpacity?: number;
+    primaryColor?: string;
+    secondaryColor?: string;
+}) => (
+    <Svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <Rect
+            width="32"
+            height="32"
+            rx="16"
+            fill={secondaryColor}
+            fillOpacity={fillOpacity}
+        />
+        <Path
+            d="M19.0779 10.5014C19.2368 10.3424 19.4255 10.2163 19.6332 10.1303C19.8409 10.0443 20.0635 10 20.2883 10C20.5131 10 20.7357 10.0443 20.9433 10.1303C21.151 10.2163 21.3397 10.3424 21.4987 10.5014C21.6576 10.6603 21.7837 10.849 21.8697 11.0567C21.9557 11.2644 22 11.487 22 11.7117C22 11.9365 21.9557 12.1591 21.8697 12.3668C21.7837 12.5745 21.6576 12.7632 21.4987 12.9221L13.3286 21.0922L10 22L10.9078 18.6714L19.0779 10.5014Z"
+            stroke={primaryColor}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
         />
     </Svg>
 );
@@ -55,7 +116,7 @@ export const FlashOnIcon = () => (
 );
 
 export const PauseIcon = () => (
-    <Svg fill="none" stroke-width="1.5" stroke="#ffffff" viewBox="0 0 24 24">
+    <Svg fill="none" strokeWidth="1.5" stroke="#ffffff" viewBox="0 0 24 24">
         <Path
             d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
             strokeLinecap="round"
@@ -149,4 +210,18 @@ export const StopVideCaptureIcon = () => (
             width: 28,
         }}
     />
+);
+
+export const UndoIcon = () => (
+    <Svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <Path
+            d="M32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32C24.8366 32 32 24.8366 32 16Z"
+            fill="#3E4054"
+            fillOpacity="0.5"
+        />
+        <Path
+            d="M11.5858 23.59C11.0335 23.59 10.5858 23.1423 10.5858 22.59C10.5858 22.0377 11.0335 21.59 11.5858 21.59H17.6858C18.7358 21.59 19.6483 21.2567 20.4233 20.59C21.1983 19.9233 21.5858 19.09 21.5858 18.09C21.5858 17.09 21.1983 16.2567 20.4233 15.59C19.6483 14.9233 18.7358 14.59 17.6858 14.59H11.3858L13.2858 16.4899C13.6724 16.8765 13.6724 17.5033 13.2858 17.8899C12.8992 18.2765 12.2724 18.2765 11.8858 17.8899L8.29294 14.297C7.90244 13.9065 7.90244 13.2734 8.29294 12.8829L11.8858 9.28995C12.2724 8.90335 12.8992 8.90335 13.2858 9.28995C13.6724 9.67655 13.6724 10.3034 13.2858 10.69L11.3858 12.59H17.6858C19.3025 12.59 20.69 13.115 21.8483 14.165C23.0066 15.215 23.5858 16.5233 23.5858 18.09C23.5858 19.6567 23.0066 20.9649 21.8483 22.0149C20.69 23.0649 19.3025 23.59 17.6858 23.59H11.5858Z"
+            fill="#FCFCFC"
+        />
+    </Svg>
 );
